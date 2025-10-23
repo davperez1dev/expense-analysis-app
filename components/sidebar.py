@@ -96,7 +96,23 @@ class FilterSidebar:
         # Inicializar session_state con valores por defecto
         self._inicializar_session_state(df)
         
-        st.sidebar.title("🔍 Filtros")
+        # Header mejorado con estilo profesional
+        st.sidebar.markdown("""
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    padding: 15px; 
+                    border-radius: 10px; 
+                    margin-bottom: 20px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <h2 style="margin:0; color: white; font-size: 24px; text-align: center;">
+                🔍 FILTROS
+            </h2>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Gestión de filtros guardados (al inicio para acceso rápido)
+        self._seccion_filtros_guardados()
+        
+        st.sidebar.markdown("---")
         
         # Subir archivo CSV
         self._seccion_upload()
@@ -145,12 +161,22 @@ class FilterSidebar:
             df, fecha_filtro, grupos_filtro, categorias_filtro, monto_filtro
         )
         
-        # Gestión de filtros guardados
+        # Mostrar contador de registros con mejor estilo
         st.sidebar.markdown("---")
-        self._seccion_filtros_guardados()
-        
-        # Mostrar contador de registros
-        st.sidebar.info(f"📊 **{len(df_filtrado):,}** registros filtrados de **{len(df):,}** totales")
+        st.sidebar.markdown(f"""
+        <div style="background: rgba(33, 150, 243, 0.1); 
+                    padding: 12px; 
+                    border-radius: 8px;
+                    border-left: 4px solid #2196F3;
+                    margin: 10px 0;">
+            <div style="color: #2196F3; font-weight: 600; font-size: 16px;">
+                📊 {len(df_filtrado):,} registros
+            </div>
+            <div style="color: #666; font-size: 12px; margin-top: 4px;">
+                de {len(df):,} totales
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Guardar filtros aplicados
         self.filtros_aplicados = {
@@ -186,22 +212,19 @@ class FilterSidebar:
         fecha_min = pd.to_datetime(df['Fecha'].min()).date()
         fecha_max = pd.to_datetime(df['Fecha'].max()).date()
         
-        # Determinar el valor por defecto
-        if 'rango_fechas' in st.session_state:
-            valor_default = st.session_state['rango_fechas']
-        else:
-            valor_default = (fecha_min, fecha_max)
+        # Inicializar en session_state si no existe (en lugar de usar 'value')
+        if 'rango_fechas' not in st.session_state:
+            st.session_state['rango_fechas'] = (fecha_min, fecha_max)
         
-        # Asegurar que valor_default sea una tupla de dates
-        if not isinstance(valor_default, tuple):
-            valor_default = (fecha_min, fecha_max)
-        elif len(valor_default) != 2:
-            valor_default = (fecha_min, fecha_max)
+        # Validar que el valor en session_state sea válido
+        if not isinstance(st.session_state['rango_fechas'], tuple):
+            st.session_state['rango_fechas'] = (fecha_min, fecha_max)
+        elif len(st.session_state['rango_fechas']) != 2:
+            st.session_state['rango_fechas'] = (fecha_min, fecha_max)
         
-        # Selector de rango
+        # Selector de rango (SIN 'value', solo 'key')
         rango_fechas = st.sidebar.date_input(
             "Rango de fechas",
-            value=valor_default,
             min_value=fecha_min,
             max_value=fecha_max,
             format="DD/MM/YYYY",

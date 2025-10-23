@@ -12,12 +12,17 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from utils import ConfigLoader, CategoryClassifier, DataLoader, CurrencyFormatter, TableFormatter
 from components.sidebar import FilterSidebar
+from utils.page_transitions import add_page_transition, add_custom_css
 
 st.set_page_config(
     page_title="Explorador de Datos",
     page_icon="📊",
     layout="wide"
 )
+
+# Aplicar transiciones
+add_page_transition()
+add_custom_css()
 
 # CSS personalizado - Adaptado para tema oscuro
 st.markdown("""
