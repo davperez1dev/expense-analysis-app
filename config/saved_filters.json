@@ -1,0 +1,36 @@
+{
+  "Ultimo tres meses": {
+    "filtros": {
+      "rango_fechas": [
+        "2024-01-01",
+        "2025-10-01"
+      ],
+      "años_seleccionados": [
+        2025
+      ],
+      "meses_seleccionados": [
+        "Octubre",
+        "Septiembre",
+        "Agosto"
+      ],
+      "gastos_grupos": [
+        "Básico",
+        "Discrecional",
+        "Necesario"
+      ],
+      "ingresos_grupos": [
+        "Ingreso Ocasional",
+        "Ingreso Regular"
+      ],
+      "todos_grupos": false,
+      "cats_gastos": [],
+      "cats_ingresos": [],
+      "monto_minimo": 0,
+      "monto_maximo": 0,
+      "monto_minimo_abs": 0.0,
+      "tipo_transaccion": "Todos"
+    },
+    "fecha_creacion": "2025-10-23T17:38:55.980023",
+    "fecha_modificacion": "2025-10-23T17:38:55.980023"
+  }
+}

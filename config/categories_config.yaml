@@ -1,0 +1,320 @@
+version: "2.0"
+last_updated: "2025-10-21"
+
+# ============================================================================
+# DEFINICIÓN DE GRUPOS PRINCIPALES
+# ============================================================================
+grupos:
+  basico:
+    codigo: "B"
+    prefijo: "B-"
+    nombre: "Básico"
+    descripcion: "Gastos esenciales del hogar"
+    color: "#4A90E2"
+    tipo: "gasto"
+    
+  discrecional:
+    codigo: "D"
+    prefijo: "D-"
+    nombre: "Discrecional"
+    descripcion: "Gastos opcionales y no esenciales"
+    color: "#F5A623"
+    tipo: "gasto"
+    
+  necesario:
+    codigo: "N"
+    prefijo: "N-"
+    nombre: "Necesario"
+    descripcion: "Gastos indispensables para vivir"
+    color: "#BD10E0"
+    tipo: "gasto"
+
+  # --- INGRESOS ---
+  ingreso_regular:
+    codigo: "R"
+    prefijo: "R-"
+    nombre: "Ingreso Regular"
+    descripcion: "Ingresos recurrentes y predecibles (Sueldo, Pasivos)"
+    color: "#27AE60"
+    tipo: "ingreso"
+    
+  ingreso_ocasional:
+    codigo: "O"
+    prefijo: "O-"
+    nombre: "Ingreso Ocasional"
+    descripcion: "Ingresos esporádicos no recurrentes"
+    color: "#2ECC71"
+    tipo: "ingreso"
+
+  # --- CATEGORÍAS ESPECIALES (sin prefijo, clasificación contextual) ---
+  especiales:
+    codigo: "E"
+    prefijo: null
+    nombre: "Especiales"
+    descripcion: "Categorías sin prefijo: préstamos, trabajo clientes, donaciones, otros (clasificación por signo)"
+    color: "#F39C12"
+    tipo: "mixto"  # Puede ser gasto o ingreso según contexto
+
+# ============================================================================
+# JERARQUÍA DE CATEGORÍAS Y SUBCATEGORÍAS
+# ============================================================================
+jerarquia_categorias:
+  # --- GRUPO BÁSICO (B-) ---
+  basico:
+    "B-Cuidado Personal":
+      grupo: "basico"
+      subcategorias:
+        - "Aseo/Cosmeticos"
+        - "Ropa y Calzado"
+    
+    "B-Educación":
+      grupo: "basico"
+      subcategorias:
+        - "Cursos"
+        - "Libros y Suministros"
+        - "Recursos Online"
+    
+    "B-Entretenimiento y Recreación":
+      grupo: "basico"
+      subcategorias:
+        - "Dispositivos Electrónico"
+        - "Ocio/Comer Fuera"
+        - "Servicios Nube"
+    
+    "B-Servicios Financieros":
+      grupo: "basico"
+      subcategorias:
+        - "Administrativo"
+    
+    "B-Transporte":
+      grupo: "basico"
+      subcategorias:
+        - "Combustible"
+        - "Estacionamiento"
+        - "Mantenimiento Auto"
+        - "Transporte Público"
+  
+  # --- GRUPO DISCRECIONAL (D-) ---
+  discrecional:
+    "D-Gustos y Extras":
+      grupo: "discrecional"
+      subcategorias:
+        - "Chucherias"
+        - "Mascota"
+        - "Regalos"
+    
+    "D-Muebles y Otros":
+      grupo: "discrecional"
+      subcategorias:
+        - "Electrodomésticos"
+        - "Herramientas"
+        - "Muebles"
+        - "Repuestos"
+    
+    "D-Viajes y Vacaciones":
+      grupo: "discrecional"
+      subcategorias:
+        - "Viajes"
+    
+    "D-Donacion/Caridad":
+      grupo: "discrecional"
+      subcategorias:
+        - "Donación varias"
+  
+  # --- GRUPO NECESARIO (N-) ---
+  necesario:
+    "N-Alimentación":
+      grupo: "necesario"
+      subcategorias:
+        - "Comidas Varias"
+    
+    "N-Obligaciones Legales":
+      grupo: "necesario"
+      subcategorias:
+        - "AFIP/Rentas"
+    
+    "N-Salud":
+      grupo: "necesario"
+      subcategorias:
+        - "Actividad Física y Bienestar"
+        - "Atención Médica"
+        - "Medicamentos y Otros"
+        - "Medicina Prepaga"
+    
+    "N-Vivienda":
+      grupo: "necesario"
+      subcategorias:
+        - "Mantenimiento Casa"
+        - "Servicios"
+  
+  # --- CATEGORÍAS ESPECIALES (sin prefijo) ---
+  especiales:
+    "Inversiones":
+      grupo: "especiales"
+      subcategorias:
+        - "Mineria-Cripto"
+    
+    "Préstamos":
+      grupo: "especiales"
+      subcategorias:
+        - "Pago préstamo sacado"
+        - "Préstamo a Deber"
+    
+    "Tarjeta Crédito Prestada Gastos":
+      grupo: "especiales"
+      tipo: "gasto"
+    
+    "TrabajoClientes":
+      grupo: "especiales"
+      subcategorias:
+        - "Cobro Deuda Ajuste Saldo"
+        - "Compra Materiales para Avance trabajo"
+        - "Pago Mano obra a tercero"
+        - "Trabajo-Transporte"
+  
+  # --- INGRESOS REGULARES (R-) ---
+  ingreso_regular:
+    "R-Sueldo":
+      grupo: "ingreso_regular"
+      subcategorias:
+        - "Consultoria-Dev"
+        - "Infraestructura IT"
+        - "Negocio Familiar (Gestión y Soporte IT)"
+        - "Soporte técnico"
+    
+    "R-IngresoPasivo":
+      grupo: "ingreso_regular"
+      subcategorias:
+        - "Acciones, CEDEAR, Bonos, FCI, etc"
+        - "Importe Pasivo Generado"
+        - "Interés Préstamo Negocio Familiar"
+  
+  # --- INGRESOS OCASIONALES (O-) ---
+  ingreso_ocasional:
+    "O-IngresoExtra":
+      grupo: "ingreso_ocasional"
+      subcategorias:
+        - "Venta Equipos/Componentes"
+    
+    # Categorías de ingresos especiales (anteriormente en "Otros")
+    "Anticipo p/ compra equipos/materiales":
+      grupo: "especiales"
+      tipo: "ingreso"
+    
+    "Devolucion por Compra Equipos Gastados":
+      grupo: "especiales"
+      tipo: "ingreso"
+    
+    "Dinero pedido":
+      grupo: "especiales"
+      tipo: "ingreso"
+    
+    "Recibido en Cta para Pagar Algo":
+      grupo: "especiales"
+      tipo: "ingreso"
+    
+    "Tarjeta Crédito Prestada Ingresos":
+      grupo: "especiales"
+      tipo: "ingreso"
+
+# ============================================================================
+# CATEGORÍAS CONTEXTUALES (clasificación depende del contexto/signo)
+# ============================================================================
+categorias_contextuales:
+  "Otros":
+    clasificar_por: "signo_monto"
+    si_positivo:
+      grupo: "especiales"
+      tipo: "ingreso"
+      categoria_principal: "Otros"
+      subcategorias:
+        - "Otros"
+        - "Anticipo p/ compra equipos/materiales"
+        - "Devolucion por Compra Equipos Gastados"
+        - "Dinero pedido"
+        - "Recibido en Cta para Pagar Algo"
+        - "Otros Tarjeta Crédito Prestada Ingresos"
+    si_negativo:
+      grupo: "especiales"
+      tipo: "gasto"
+      categoria_principal: "Otros"
+      subcategorias:
+        - "Otros"
+        - "Tarjeta Crédito Prestada Gastos"
+
+# ============================================================================
+# FILAS ESPECIALES (resumen, totales)
+# ============================================================================
+filas_resumen:
+  - "Gastos"
+  - "Ingresos"
+  - "Ganancia Neta"
+  - "Balance"
+  - "Total"
+
+# ============================================================================
+# CONFIGURACIÓN VISUAL
+# ============================================================================
+formato_visual:
+  nivel_1_grupo:
+    tipo: "Grupo"
+    bold: true
+    background_color: "#2C2C2C"
+    color: "#FFFFFF"
+    indent: 0
+    
+  nivel_2_categoria_principal:
+    tipo: "Categoría Principal"
+    bold: true
+    background_color: "#3C3C3C"
+    color: "#E6E6E6"
+    indent: 1
+    
+  nivel_3_subcategoria:
+    tipo: "Subcategoría"
+    bold: false
+    background_color: null
+    color: "#D9D9D9"
+    indent: 2
+
+# ============================================================================
+# CONFIGURACIÓN DE FORMATO Y COLORES
+# ============================================================================
+formato_moneda:
+  simbolo: "$"
+  separador_miles: ","
+  separador_decimal: "."
+  decimales: 2
+  posicion_simbolo: "antes"
+
+colores_valores:
+  positivo: "#27AE60"
+  negativo: "#E74C3C"
+  neutro: "#95A5A6"
+  umbral_alerta: -100000
+
+colores_graficos:
+  basico: "#4A90E2"
+  discrecional: "#F5A623"
+  necesario: "#BD10E0"
+  ingresos: "#50E3C2"
+  especiales: "#7ED321"
+  otros: "#95A5A6"
+
+# Paleta de colores para subcategorías (gráficos detallados)
+colores_subcategorias:
+  - "#4A90E2"
+  - "#E74C3C"
+  - "#F5A623"
+  - "#50C878"
+  - "#9B59B6"
+  - "#1ABC9C"
+  - "#E67E22"
+  - "#3498DB"
+  - "#2ECC71"
+  - "#F39C12"
+  - "#D35400"
+  - "#C0392B"
+  - "#8E44AD"
+  - "#27AE60"
+  - "#2980B9"
