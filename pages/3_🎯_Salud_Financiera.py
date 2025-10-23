@@ -11,6 +11,7 @@ from utils.data_loader import DataLoader
 from utils.formatters import CurrencyFormatter
 from utils.config_loader import ConfigLoader
 from utils.category_classifier import CategoryClassifier
+from utils.page_transitions import add_page_transition, add_custom_css
 
 # Configuración de página
 st.set_page_config(
@@ -18,6 +19,10 @@ st.set_page_config(
     page_icon="🎯",
     layout="wide"
 )
+
+# Aplicar transiciones
+add_page_transition()
+add_custom_css()
 
 # CSS personalizado para mejorar visualización
 st.markdown("""

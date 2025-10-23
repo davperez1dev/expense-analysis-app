@@ -11,6 +11,7 @@ import os
 sys.path.insert(0, str(Path(__file__).parent))
 
 from utils import ConfigLoader, CategoryClassifier, DataLoader, CurrencyFormatter
+from utils.page_transitions import add_page_transition, add_custom_css
 
 # Configuración de la página
 st.set_page_config(
@@ -19,6 +20,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Aplicar transiciones y estilos mejorados
+add_page_transition()
+add_custom_css()
 
 # CSS personalizado - Adaptado para tema oscuro
 st.markdown("""
