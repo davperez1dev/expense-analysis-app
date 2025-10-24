@@ -12,6 +12,8 @@ from utils.formatters import CurrencyFormatter
 from utils.config_loader import ConfigLoader
 from utils.category_classifier import CategoryClassifier
 from utils.page_transitions import add_page_transition, add_custom_css
+from utils.budget_calculator import BudgetCalculator
+from utils.budget_alerts import BudgetAlert
 
 # Configuración de página
 st.set_page_config(
@@ -517,6 +519,265 @@ def main():
     
     # Agregar recomendaciones generales
     st.markdown("---")
+    
+    # NUEVA SECCIÓN: Sistema de Presupuestos
+    st.header("💰 Control de Presupuestos")
+    
+    # Cargar calculador de presupuestos
+    try:
+        calculator = BudgetCalculator(pd.read_csv('data/categories_timeline.csv'))
+        alert_system = BudgetAlert()
+        
+        # Selector de método de cálculo
+        col1, col2, col3 = st.columns([2, 1, 1])
+        
+        with col1:
+            st.markdown("### 🎯 Presupuestos Sugeridos por Categoría")
+        
+        with col2:
+            metodo_calculo = st.selectbox(
+                "Método de cálculo",
+                ['auto', 'conservative', 'moderate', 'aggressive'],
+                index=0,
+                help="Auto: Selecciona automáticamente según volatilidad"
+            )
+        
+        with col3:
+            mostrar_detalles = st.checkbox("Mostrar detalles", value=False)
+        
+        # Obtener presupuestos para categorías principales
+        categorias_principales = [
+            'Combustible',
+            'Ocio/Comer Fuera',
+            'Comidas Varias',
+            'Medicina Prepaga',
+            'Servicios',
+            'Aseo/Cosmeticos',
+            'Actividad Física y Bienestar',
+            'Cursos'
+        ]
+        
+        # Calcular gastos actuales del período filtrado
+        gastos_actuales = {}
+        for categoria in categorias_principales:
+            gasto = df_filtrado[
+                (df_filtrado['Categorías'] == categoria) & 
+                (df_filtrado['Monto'] < 0)
+            ]['Monto'].sum()
+            gastos_actuales[categoria] = gasto
+        
+        # Calcular presupuestos sugeridos
+        presupuestos = {}
+        for categoria in categorias_principales:
+            budget_info = calculator.suggest_budget(categoria, method=metodo_calculo)
+            presupuestos[categoria] = budget_info['sugerido']
+        
+        # Mostrar dashboard de alertas
+        st.markdown("#### 🚦 Estado de Presupuestos")
+        
+        # Métricas resumen
+        metrics = alert_system.get_summary_metrics(presupuestos, gastos_actuales)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric(
+                "💰 Presupuesto Total",
+                f"${metrics['total_presupuesto']:,.0f}",
+                help="Suma de todos los presupuestos sugeridos"
+            )
+        
+        with col2:
+            st.metric(
+                "💸 Gastado",
+                f"${metrics['total_gastado']:,.0f}",
+                delta=f"-{metrics['porcentaje_total']:.1f}%",
+                delta_color="inverse",
+                help="Total gastado en el período"
+            )
+        
+        with col3:
+            remaining = metrics['total_presupuesto'] - metrics['total_gastado']
+            st.metric(
+                "💵 Disponible",
+                f"${remaining:,.0f}",
+                help="Presupuesto restante"
+            )
+        
+        with col4:
+            st.metric(
+                "📈 Uso Promedio",
+                f"{metrics['porcentaje_total']:.1f}%",
+                help="Porcentaje promedio de uso"
+            )
+        
+        # Estado por categoría
+        st.markdown("#### 🏷️ Alertas por Categoría")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"""
+            <div style="text-align: center; padding: 15px; background-color: #28a74520; border-radius: 8px;">
+                <div style="font-size: 28px;">✅</div>
+                <div style="font-weight: bold; font-size: 24px;">{metrics['categorias_safe']}</div>
+                <div style="font-size: 12px; color: #aaa;">En control</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"""
+            <div style="text-align: center; padding: 15px; background-color: #ffc10720; border-radius: 8px;">
+                <div style="font-size: 28px;">⚠️</div>
+                <div style="font-weight: bold; font-size: 24px;">{metrics['categorias_warning']}</div>
+                <div style="font-size: 12px; color: #aaa;">Atención</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div style="text-align: center; padding: 15px; background-color: #fd7e1420; border-radius: 8px;">
+                <div style="font-size: 28px;">🚨</div>
+                <div style="font-weight: bold; font-size: 24px;">{metrics['categorias_danger']}</div>
+                <div style="font-size: 12px; color: #aaa;">Peligro</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col4:
+            st.markdown(f"""
+            <div style="text-align: center; padding: 15px; background-color: #dc354520; border-radius: 8px;">
+                <div style="font-size: 28px;">❌</div>
+                <div style="font-weight: bold; font-size: 24px;">{metrics['categorias_exceeded']}</div>
+                <div style="font-size: 12px; color: #aaa;">Excedido</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Mostrar alertas individuales por categoría
+        for categoria in categorias_principales:
+            budget = presupuestos.get(categoria, 0)
+            spent = gastos_actuales.get(categoria, 0)
+            
+            if budget > 0:  # Solo mostrar si hay presupuesto
+                percentage = alert_system.calculate_usage_percentage(spent, budget)
+                level = alert_system.get_alert_level(spent, budget)
+                color = alert_system.get_alert_color(level)
+                icon = alert_system.get_alert_icon(level)
+                
+                # Crear tarjeta de alerta
+                st.markdown(f"""
+                <div style="
+                    border-left: 5px solid {color};
+                    background-color: {color}15;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 10px 0;
+                ">
+                    <div style="font-size: 16px; margin-bottom: 10px;">
+                        {icon} <strong>{categoria}</strong>
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <div style="
+                            width: 100%;
+                            background-color: #e9ecef;
+                            border-radius: 10px;
+                            height: 25px;
+                            position: relative;
+                            overflow: hidden;
+                            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+                        ">
+                            <div style="
+                                width: {min(percentage, 100)}%;
+                                background-color: {color};
+                                height: 100%;
+                                border-radius: 10px;
+                                transition: width 0.3s ease;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            ">
+                                <span style="
+                                    color: white;
+                                    font-weight: bold;
+                                    font-size: 12px;
+                                    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+                                ">
+                                    {percentage:.1f}%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="color: #555; font-size: 14px;">
+                        Gastado: <strong>${abs(spent):,.0f}</strong> / 
+                        Presupuesto: <strong>${budget:,.0f}</strong>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Mostrar detalles si está activado
+                if mostrar_detalles:
+                    budget_info = calculator.suggest_budget(categoria, method=metodo_calculo)
+                    analysis = calculator.analyze_spending_pattern(categoria)
+                    
+                    with st.expander(f"📊 Detalles de {categoria}"):
+                        col1, col2 = st.columns(2)
+                        
+                        with col1:
+                            st.markdown("**📈 Análisis Estadístico**")
+                            st.write(f"- Promedio 3 meses: ${budget_info['promedio_3m']:,.0f}")
+                            st.write(f"- Promedio 6 meses: ${budget_info['promedio_6m']:,.0f}")
+                            st.write(f"- Percentil 75: ${budget_info['percentil_75']:,.0f}")
+                            st.write(f"- Percentil 90: ${budget_info['percentil_90']:,.0f}")
+                            st.write(f"- Volatilidad: {budget_info['volatilidad']}")
+                            st.write(f"- Confianza: {budget_info['confianza']}%")
+                        
+                        with col2:
+                            st.markdown("**🔍 Patrón de Gastos**")
+                            if 'promedio_mensual' in analysis:
+                                st.write(f"- Promedio mensual: ${analysis['promedio_mensual']:,.0f}")
+                                st.write(f"- Rango: ${analysis['gasto_minimo']:,.0f} - ${analysis['gasto_maximo']:,.0f}")
+                                st.write(f"- Tendencia: {analysis['tendencia']}")
+                                st.write(f"- Frecuencia: {analysis['frecuencia']}%")
+        
+        # Información sobre metodología
+        with st.expander("ℹ️ ¿Cómo se calculan estos presupuestos?"):
+            st.markdown("""
+            ### 📊 Metodología de Cálculo
+            
+            El sistema analiza tu historial de gastos (últimos 22 meses) y utiliza diferentes métodos según la volatilidad de cada categoría:
+            
+            #### 🎯 Métodos Disponibles:
+            
+            **AUTO (Recomendado):**
+            - Gastos estables (CV < 15%): Usa promedio de 3 meses
+            - Gastos moderados (CV 15-40%): Usa Percentil 75 ⭐
+            - Gastos volátiles (CV > 40%): Usa Percentil 90
+            
+            **CONSERVATIVE:**
+            - Siempre usa Percentil 90 (máxima protección)
+            
+            **MODERATE:**
+            - Promedio ponderado entre múltiples métricas
+            
+            **AGGRESSIVE:**
+            - Usa promedio de 3 meses (presupuesto más ajustado)
+            
+            #### 🚦 Niveles de Alerta:
+            - ✅ **Verde (0-70%)**: Todo bajo control
+            - ⚠️ **Amarillo (70-90%)**: Atención, reduce gastos
+            - 🚨 **Naranja (90-100%)**: Peligro, detén gastos
+            - ❌ **Rojo (>100%)**: Presupuesto excedido
+            
+            **Coeficiente de Variación (CV)** = Desviación Estándar / Promedio × 100
+            """)
+    
+    except Exception as e:
+        st.warning(f"⚠️ No se pudo cargar el sistema de presupuestos: {str(e)}")
+        st.info("Asegúrate de tener el archivo 'data/categories_timeline.csv' disponible")
+    
+    st.markdown("---")
+    
     with st.expander("📚 Recomendaciones Generales de Finanzas Personales"):
         st.markdown("""
         ### 🎯 Reglas de Oro:

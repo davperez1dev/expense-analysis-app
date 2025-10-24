@@ -12,6 +12,7 @@ pyyaml = "*"
 openpyxl = "*"
 python-dateutil = "*"
 matplotlib = "*"
+scipy = "*"
 
 [dev-packages]
 pytest = "*"
