@@ -6,6 +6,8 @@ from .category_classifier import CategoryClassifier
 from .data_loader import DataLoader
 from .formatters import CurrencyFormatter, DateFormatter, NumberFormatter, TableFormatter
 from .filter_manager import FilterManager
+from .budget_calculator import BudgetCalculator
+from .budget_alerts import BudgetAlert
 
 __all__ = [
     'ConfigLoader',
@@ -15,5 +17,7 @@ __all__ = [
     'DateFormatter',
     'NumberFormatter',
     'TableFormatter',
-    'FilterManager'
+    'FilterManager',
+    'BudgetCalculator',
+    'BudgetAlert'
 ]
