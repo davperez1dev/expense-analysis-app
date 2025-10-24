@@ -485,31 +485,40 @@ class FilterSidebar:
         monto_min = float(df['Monto'].min())
         monto_max = float(df['Monto'].max())
         
-        # Slider de rango
+        # Inicializar rango_montos en session_state si no existe
+        if 'rango_montos' not in st.session_state:
+            st.session_state['rango_montos'] = (monto_min, monto_max)
+        
+        # Slider de rango (SIN value, solo key)
         rango_montos = st.sidebar.slider(
             "Rango de valores",
             min_value=monto_min,
             max_value=monto_max,
-            value=(monto_min, monto_max),
             format="$%.0f",
             key='rango_montos'
         )
         
         # Filtro de monto mínimo absoluto
+        # Inicializar en session_state si no existe
+        if 'monto_minimo_abs' not in st.session_state:
+            st.session_state['monto_minimo_abs'] = 0.0
+        
         monto_minimo_abs = st.sidebar.number_input(
             "Mostrar solo gastos > (valor absoluto)",
             min_value=0.0,
-            value=0.0,
             step=1000.0,
             format="%.0f",
             key='monto_minimo_abs'
         )
         
         # Tipo de transacción
+        # Inicializar en session_state si no existe
+        if 'tipo_transaccion' not in st.session_state:
+            st.session_state['tipo_transaccion'] = 'Todos'
+        
         tipo_transaccion = st.sidebar.radio(
             "Tipo de transacción",
             options=['Todos', 'Solo Gastos', 'Solo Ingresos'],
-            index=0,
             key='tipo_transaccion'
         )
         

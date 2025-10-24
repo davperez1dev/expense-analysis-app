@@ -195,6 +195,7 @@ jerarquia_categorias:
       grupo: "ingreso_ocasional"
       subcategorias:
         - "Venta Equipos/Componentes"
+        - "Devolución Impuestos y Otros"
     
     # Categorías de ingresos especiales (anteriormente en "Otros")
     "Anticipo p/ compra equipos/materiales":
