@@ -67,6 +67,7 @@ TIPO (GASTOS / INGRESOS)
 | BlueCoins | Expense Analysis App | Subcategorías |
 |-----------|---------------------|---------------|
 | O-IngresoExtra | O-IngresoExtra | Venta Equipos/Componentes |
+| O-IngresoExtra | O-IngresoExtra | Devolución Impuestos y Otros |
 
 #### ⚙️ Otros Ingresos (Sin Prefijo)
 
