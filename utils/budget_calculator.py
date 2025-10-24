@@ -38,10 +38,12 @@ class BudgetCalculator:
                 self.df[col] = self.df[col].apply(self._parse_amount)
     
     def _parse_amount(self, value) -> float:
-        """Convierte strings con formato argentino a float"""
+        """Convierte strings con formato americano (123,456.78) a float"""
         if isinstance(value, str):
-            # Eliminar comillas, espacios y convertir
-            value = value.strip('"').replace('.', '').replace(',', '.')
+            # Eliminar comillas y espacios
+            value = value.strip('"').strip()
+            # Formato americano: quitar comas (separador de miles)
+            value = value.replace(',', '')
             try:
                 return float(value)
             except:
