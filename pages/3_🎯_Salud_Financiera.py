@@ -12,7 +12,7 @@ from utils.formatters import CurrencyFormatter
 from utils.config_loader import ConfigLoader
 from utils.category_classifier import CategoryClassifier
 from utils.page_transitions import add_page_transition, add_custom_css
-from utils.budget_calculator import BudgetCalculator
+from utils.budget_calculator import BudgetCalculator, load_calculator
 from utils.budget_alerts import BudgetAlert
 
 # Configuración de página
@@ -517,6 +517,68 @@ def main():
             </div>
         """, unsafe_allow_html=True)
     
+    # --- NUEVA SECCIÓN: Presupuestos sugeridos
+    st.markdown("---")
+    st.subheader("💰 Presupuestos sugeridos")
+    try:
+        # Cargar calculador (usando timeline ya en data)
+        calculator = load_calculator('data/categories_timeline.csv')
+        alert_system = BudgetAlert()
+
+        categorias_principales = [
+            'Combustible',
+            'Ocio/Comer Fuera',
+            'Comidas Varias',
+            'Medicina Prepaga',
+            'Servicios',
+            'Aseo/Cosmeticos',
+            'Actividad Física y Bienestar',
+            'Cursos'
+        ]
+
+        metodo_calculo = st.selectbox('Método de cálculo', ['auto', 'conservative', 'moderate', 'aggressive'], index=0)
+        mostrar_detalles = st.checkbox('Mostrar detalles por categoría', value=False)
+
+        # Calcular presupuestos y gastos actuales
+        presupuestos = calculator.get_all_budgets(categorias_principales, method=metodo_calculo)
+        gastos_actuales = {}
+        for c in categorias_principales:
+            gastos_actuales[c] = df_filtrado[(df_filtrado['Categorías'] == c) & (df_filtrado['Monto'] < 0)]['Monto'].sum()
+
+        # Resumen
+        metrics = alert_system.get_summary_metrics(presupuestos, gastos_actuales)
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric('💰 Presupuesto total', f"${metrics['total_presupuesto']:,.0f}")
+        with col2:
+            st.metric('💸 Gastado', f"${metrics['total_gastado']:,.0f}")
+        with col3:
+            st.metric('💵 Disponible', f"${metrics['total_presupuesto'] - metrics['total_gastado']:,.0f}")
+        with col4:
+            st.metric('📈 Uso promedio', f"{metrics['porcentaje_total']:.1f}%")
+
+        st.markdown('#### Alertas por categoría')
+        for c in categorias_principales:
+            bud = presupuestos.get(c, 0)
+            spent = gastos_actuales.get(c, 0)
+            if bud <= 0:
+                continue
+            lvl = alert_system.get_alert_level(spent, bud)
+            color = alert_system.get_alert_color(lvl)
+            icon = alert_system.get_alert_icon(lvl)
+            pct = alert_system.calculate_usage_percentage(spent, bud)
+
+            st.markdown(f"<div style='border-left:4px solid {color}; padding:10px; border-radius:6px; margin:6px 0;'>\n<strong>{icon} {c}</strong> — Gastado: ${abs(spent):,.0f} / Presupuesto: ${bud:,.0f} ({pct:.1f}%)\n</div>", unsafe_allow_html=True)
+
+            if mostrar_detalles:
+                info = calculator.suggest_budget(c, method=metodo_calculo)
+                analysis = calculator.suggest_budget(c, method=metodo_calculo)  # re-use for now
+                with st.expander(f'Detalles: {c}'):
+                    st.write(info)
+
+    except Exception as e:
+        st.warning(f'No se pudo calcular presupuestos: {e}')
+
     # Agregar recomendaciones generales
     st.markdown("---")
     
